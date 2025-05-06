@@ -92,3 +92,17 @@ if data:
 
     else:
         st.warning("No valid emails generated.")
+
+
+elif option == "Paste Data":
+    pasted_text = st.text_area("Paste full names (one per line) followed by the domain on the last line", height=300)
+    if pasted_text.strip():
+        lines = [line.strip() for line in pasted_text.strip().split("\n") if line.strip()]
+        if len(lines) >= 2:
+            domain = lines[-1]
+            names = lines[:-1]
+            for name in names:
+                data.append([name, domain])
+        else:
+            st.warning("Please enter at least one name followed by a domain.")
+
