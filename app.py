@@ -19,43 +19,66 @@ email_formats = [
     "{first}{last[0]}@{domain}",
 ]
 
-st.title("Flexible Email Format Generator")
+st.title("Bulk Email Format Generator")
 
-# Input fields
-full_name = st.text_input("Enter Full Name (e.g., John Smith)")
-domain_input = st.text_input("Enter Domain/URL (e.g., google.com, https://www.google.com)")
+# Option selector
+option = st.radio("Choose input method:", ("Upload CSV", "Paste Data"))
 
-if full_name and domain_input:
-    try:
-        # Split name into first and last
+# Input source
+data = []
+if option == "Upload CSV":
+    uploaded_file = st.file_uploader("Upload CSV with 'Full Name' and 'Domain' columns", type=["csv"])
+    if uploaded_file:
+        df_input = pd.read_csv(uploaded_file)
+        if 'Full Name' not in df_input.columns or 'Domain' not in df_input.columns:
+            st.error("CSV must contain 'Full Name' and 'Domain' columns.")
+        else:
+            data = df_input[['Full Name', 'Domain']].values.tolist()
+
+elif option == "Paste Data":
+    pasted_text = st.text_area("Paste full name and domain separated by comma on each line (e.g., John Smith, google.com)", height=200)
+    if pasted_text.strip():
+        for line in pasted_text.strip().split("\n"):
+            if "," in line:
+                parts = line.strip().split(",", 1)
+                name = parts[0].strip()
+                domain = parts[1].strip()
+                data.append([name, domain])
+
+# Process and display results
+if data:
+    all_emails = []
+
+    for full_name, domain_input in data:
         name_parts = full_name.strip().split()
+        if not name_parts:
+            continue
         first = name_parts[0].lower()
         last = name_parts[-1].lower() if len(name_parts) > 1 else ""
 
-        # Clean and extract domain using tldextract
-        extracted = tldextract.extract(domain_input.strip())
-        if extracted.domain and extracted.suffix:
-            domain = f"{extracted.domain}.{extracted.suffix}"
-        else:
-            st.error("Could not extract domain. Please check your input.")
-            st.stop()
+        extracted = tldextract.extract(domain_input)
+        if not extracted.domain or not extracted.suffix:
+            continue
+        domain = f"{extracted.domain}.{extracted.suffix}"
 
-        # Generate emails
-        emails = []
         for fmt in email_formats:
             try:
                 email = fmt.format(first=first, last=last, domain=domain)
-                emails.append(email)
+                all_emails.append({
+                    "Full Name": full_name,
+                    "Domain": domain,
+                    "Email Format": fmt,
+                    "Generated Email": email
+                })
             except Exception:
                 continue
 
-        # Display
-        df = pd.DataFrame({"Generated Emails": emails})
-        st.dataframe(df)
+    if all_emails:
+        df_result = pd.DataFrame(all_emails)
+        st.success(f"Generated {len(df_result)} emails.")
+        st.dataframe(df_result)
 
-        # Download
-        csv = df.to_csv(index=False)
-        st.download_button("Download as CSV", csv, "emails.csv", "text/csv")
-
-    except Exception as e:
-        st.error(f"Something went wrong: {e}")
+        csv = df_result.to_csv(index=False)
+        st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
+    else:
+        st.warning("No valid emails generated.")
