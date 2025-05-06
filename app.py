@@ -53,6 +53,10 @@ elif option == "Paste Data":
         else:
             st.warning("Please paste at least one full name and a domain on the last line.")
 
+# Format selector UI
+format_options = ["All Formats"] + email_formats
+selected_format = st.selectbox("Choose email format (or select 'All Formats' to generate all):", format_options)
+
 # When the "Verify" button is pressed
 if st.button("Verify"):
     if data:
@@ -70,7 +74,8 @@ if st.button("Verify"):
                 continue
             domain = f"{extracted.domain}.{extracted.suffix}"
 
-            for fmt in email_formats:
+            formats_to_use = email_formats if selected_format == "All Formats" else [selected_format]
+            for fmt in formats_to_use:
                 try:
                     email = fmt.format(first=first, last=last, domain=domain)
                     all_emails.append({
