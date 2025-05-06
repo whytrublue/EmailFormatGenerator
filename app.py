@@ -7,6 +7,7 @@ email_formats = [
     "{first}.{last}@{domain}",
     "{first[0]}.{last}@{domain}",
     "{first}.{last[0]}@{domain}",
+    "{first[0]}{last[0]}@{domain}",
     "{first[0]}.{last[0]}@{domain}",
     "{last}.{first}@{domain}",
     "{last}.{first[0]}@{domain}",
