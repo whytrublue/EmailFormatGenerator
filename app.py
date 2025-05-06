@@ -81,25 +81,26 @@ if data:
             except Exception:
                 continue
 
-    if all_emails:
-    df_result = pd.DataFrame(all_emails)
-    st.success(f"Generated {len(df_result)} emails.")
-    st.dataframe(df_result)
+        if all_emails:
+        df_result = pd.DataFrame(all_emails)
+        st.success(f"Generated {len(df_result)} emails.")
+        st.dataframe(df_result)
 
-    csv = df_result.to_csv(index=False)
-    st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
+        csv = df_result.to_csv(index=False)
+        st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
 
-    # Display just the email column in a scrollable, copy-friendly format
-    st.subheader("📋 Copy Generated Emails")
-    email_text = "\n".join(df_result["Generated Email"].tolist())
-    st.markdown(
-        f"""
-        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; background-color: #f9f9f9;">
-            <pre>{email_text}</pre>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-else:
-    st.warning("No valid emails generated.")
+        # Display just the email column in a scrollable, copy-friendly format
+        st.subheader("📋 Copy Generated Emails")
+        email_text = "\n".join(df_result["Generated Email"].tolist())
+        st.markdown(
+            f"""
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; background-color: #f9f9f9;">
+                <pre>{email_text}</pre>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    else:
+        st.warning("No valid emails generated.")
+
 
