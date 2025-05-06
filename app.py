@@ -2,30 +2,27 @@ import streamlit as st
 import pandas as pd
 import tldextract
 
-# Email format templates
-email_formats = [
-    "{first}.{last}@{domain}",
-    "{first[0]}.{last}@{domain}",
-    "{first}.{last[0]}@{domain}",
-    "{first[0]}{last[0]}@{domain}",
-    "{first[0]}.{last[0]}@{domain}",
-    "{last}.{first}@{domain}",
-    "{last}.{first[0]}@{domain}",
-    "{first}_{last}@{domain}",
-    "{first}@{domain}",
-    "{last}@{domain}",
-    "{first}{last}@{domain}",
-    "{first[0]}{last}@{domain}",
-    "{first}{last[0]}@{domain}",
-]
+# Map human-friendly examples to format templates
+email_format_examples = {
+    "john.smith@domain.com": "{first}.{last}@{domain}",
+    "j.smith@domain.com": "{first[0]}.{last}@{domain}",
+    "john.s@domain.com": "{first}.{last[0]}@{domain}",
+    "js@domain.com": "{first[0]}{last[0]}@{domain}",
+    "j.s@domain.com": "{first[0]}.{last[0]}@{domain}",
+    "smith.john@domain.com": "{last}.{first}@{domain}",
+    "smith.j@domain.com": "{last}.{first[0]}@{domain}",
+    "john_smith@domain.com": "{first}_{last}@{domain}",
+    "john@domain.com": "{first}@{domain}",
+    "smith@domain.com": "{last}@{domain}",
+    "johnsmith@domain.com": "{first}{last}@{domain}",
+    "johnt@domain.com": "{first}{last[0]}@{domain}",
+    "jsmith@domain.com": "{first[0]}{last}@{domain}",
+}
 
 st.set_page_config(page_title="Bulk Email Format Generator", layout="wide")
 st.title("📧 Bulk Email Format Generator")
 
-# Option selector
 option = st.radio("Choose input method:", ("Upload CSV", "Paste Data"))
-
-# Data holder
 data = []
 
 if option == "Upload CSV":
@@ -53,10 +50,9 @@ elif option == "Paste Data":
         else:
             st.warning("Please paste at least one full name and a domain on the last line.")
 
-# Only show format selector if data is available
 if data:
-    format_options = ["All Formats"] + email_formats
-    selected_format = st.selectbox("Choose email format (or select 'All Formats' to generate all):", format_options)
+    format_options = ["All Formats"] + list(email_format_examples.keys())
+    selected_example = st.selectbox("Choose email format (example-based):", format_options)
 
     if st.button("Verify"):
         all_emails = []
@@ -73,7 +69,12 @@ if data:
                 continue
             domain = f"{extracted.domain}.{extracted.suffix}"
 
-            formats_to_use = email_formats if selected_format == "All Formats" else [selected_format]
+            # Use all formats or just the selected one
+            if selected_example == "All Formats":
+                formats_to_use = email_format_examples.values()
+            else:
+                formats_to_use = [email_format_examples[selected_example]]
+
             for fmt in formats_to_use:
                 try:
                     email = fmt.format(first=first, last=last, domain=domain)
@@ -94,7 +95,6 @@ if data:
             csv = df_result.to_csv(index=False)
             st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
 
-            # Display just the email column in a scrollable, copy-friendly format
             st.subheader("📋 Copy Generated Emails")
             email_text = "\n".join(df_result["Generated Email"].tolist())
             st.markdown(
