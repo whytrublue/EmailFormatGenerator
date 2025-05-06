@@ -18,42 +18,43 @@ email_formats = [
     "{first}{last[0]}@{domain}",
 ]
 
-st.title("Email Format Generator with Domain Extractor")
+st.title("Flexible Email Format Generator")
 
-# Input section
+# Input fields
 full_name = st.text_input("Enter Full Name (e.g., John Smith)")
-domain_input = st.text_input("Enter Website or Domain (e.g., https://www.google.co.uk)")
+domain_input = st.text_input("Enter Domain/URL (e.g., google.com, https://www.google.com)")
 
 if full_name and domain_input:
     try:
-        # Name processing
+        # Split name into first and last
         name_parts = full_name.strip().split()
         first = name_parts[0].lower()
         last = name_parts[-1].lower() if len(name_parts) > 1 else ""
 
-        # Use tldextract to get clean domain
-        extracted = tldextract.extract(domain_input)
-        if not extracted.domain or not extracted.suffix:
-            st.error("Invalid domain input.")
-        else:
+        # Clean and extract domain using tldextract
+        extracted = tldextract.extract(domain_input.strip())
+        if extracted.domain and extracted.suffix:
             domain = f"{extracted.domain}.{extracted.suffix}"
+        else:
+            st.error("Could not extract domain. Please check your input.")
+            st.stop()
 
-            # Generate emails
-            emails = []
-            for fmt in email_formats:
-                try:
-                    email = fmt.format(first=first, last=last, domain=domain)
-                    emails.append(email)
-                except Exception:
-                    continue
+        # Generate emails
+        emails = []
+        for fmt in email_formats:
+            try:
+                email = fmt.format(first=first, last=last, domain=domain)
+                emails.append(email)
+            except Exception:
+                continue
 
-            # Display
-            df = pd.DataFrame({"Generated Emails": emails})
-            st.dataframe(df)
+        # Display
+        df = pd.DataFrame({"Generated Emails": emails})
+        st.dataframe(df)
 
-            # Download
-            csv = df.to_csv(index=False)
-            st.download_button("Download as CSV", csv, "emails.csv", "text/csv")
+        # Download
+        csv = df.to_csv(index=False)
+        st.download_button("Download as CSV", csv, "emails.csv", "text/csv")
 
     except Exception as e:
-        st.error(f"Error: {e}")
+        st.error(f"Something went wrong: {e}")
