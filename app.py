@@ -53,52 +53,55 @@ elif option == "Paste Data":
         else:
             st.warning("Please paste at least one full name and a domain on the last line.")
 
-# Process and display
-if data:
-    all_emails = []
+# When the "Verify" button is pressed
+if st.button("Verify"):
+    if data:
+        all_emails = []
 
-    for full_name, domain_input in data:
-        name_parts = full_name.strip().split()
-        if not name_parts:
-            continue
-        first = name_parts[0].lower()
-        last = name_parts[-1].lower() if len(name_parts) > 1 else ""
-
-        extracted = tldextract.extract(domain_input)
-        if not extracted.domain or not extracted.suffix:
-            continue
-        domain = f"{extracted.domain}.{extracted.suffix}"
-
-        for fmt in email_formats:
-            try:
-                email = fmt.format(first=first, last=last, domain=domain)
-                all_emails.append({
-                    "Full Name": full_name,
-                    "Domain": domain,
-                    "Email Format": fmt,
-                    "Generated Email": email
-                })
-            except Exception:
+        for full_name, domain_input in data:
+            name_parts = full_name.strip().split()
+            if not name_parts:
                 continue
+            first = name_parts[0].lower()
+            last = name_parts[-1].lower() if len(name_parts) > 1 else ""
 
-    if all_emails:
-        df_result = pd.DataFrame(all_emails)
-        st.success(f"Generated {len(df_result)} emails.")
-        st.dataframe(df_result)
+            extracted = tldextract.extract(domain_input)
+            if not extracted.domain or not extracted.suffix:
+                continue
+            domain = f"{extracted.domain}.{extracted.suffix}"
 
-        csv = df_result.to_csv(index=False)
-        st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
+            for fmt in email_formats:
+                try:
+                    email = fmt.format(first=first, last=last, domain=domain)
+                    all_emails.append({
+                        "Full Name": full_name,
+                        "Domain": domain,
+                        "Email Format": fmt,
+                        "Generated Email": email
+                    })
+                except Exception:
+                    continue
 
-        # Display just the email column in a scrollable, copy-friendly format
-        st.subheader("📋 Copy Generated Emails")
-        email_text = "\n".join(df_result["Generated Email"].tolist())
-        st.markdown(
-            f"""
-            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; background-color: black; color: white;">
-                {email_text.replace('\n', '<br>')}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        if all_emails:
+            df_result = pd.DataFrame(all_emails)
+            st.success(f"Generated {len(df_result)} emails.")
+            st.dataframe(df_result)
+
+            csv = df_result.to_csv(index=False)
+            st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
+
+            # Display just the email column in a scrollable, copy-friendly format
+            st.subheader("📋 Copy Generated Emails")
+            email_text = "\n".join(df_result["Generated Email"].tolist())
+            st.markdown(
+                f"""
+                <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; background-color: black; color: white;">
+                    {email_text.replace('\n', '<br>')}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            st.warning("No valid emails generated.")
     else:
-        st.warning("No valid emails generated.")
+        st.warning("No data provided.")
