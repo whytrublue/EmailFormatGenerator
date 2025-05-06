@@ -51,8 +51,10 @@ elif option == "Paste Data":
             st.warning("Please paste at least one full name and a domain on the last line.")
 
 if data:
-    format_options = ["All Formats"] + list(email_format_examples.keys())
-    selected_example = st.selectbox("Choose email format (example-based):", format_options)
+    format_options = list(email_format_examples.keys())
+    
+    # Multiselect for allowing multiple email formats
+    selected_examples = st.multiselect("Choose email formats (multiple can be selected):", format_options)
 
     if st.button("Verify"):
         all_emails = []
@@ -69,11 +71,11 @@ if data:
                 continue
             domain = f"{extracted.domain}.{extracted.suffix}"
 
-            # Use all formats or just the selected one
-            if selected_example == "All Formats":
+            # If no formats are selected, use all available formats
+            if not selected_examples:
                 formats_to_use = email_format_examples.values()
             else:
-                formats_to_use = [email_format_examples[selected_example]]
+                formats_to_use = [email_format_examples[example] for example in selected_examples]
 
             for fmt in formats_to_use:
                 try:
