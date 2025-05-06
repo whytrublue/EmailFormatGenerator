@@ -53,13 +53,12 @@ elif option == "Paste Data":
         else:
             st.warning("Please paste at least one full name and a domain on the last line.")
 
-# Format selector UI
-format_options = ["All Formats"] + email_formats
-selected_format = st.selectbox("Choose email format (or select 'All Formats' to generate all):", format_options)
+# Only show format selector if data is available
+if data:
+    format_options = ["All Formats"] + email_formats
+    selected_format = st.selectbox("Choose email format (or select 'All Formats' to generate all):", format_options)
 
-# When the "Verify" button is pressed
-if st.button("Verify"):
-    if data:
+    if st.button("Verify"):
         all_emails = []
 
         for full_name, domain_input in data:
@@ -108,5 +107,5 @@ if st.button("Verify"):
             )
         else:
             st.warning("No valid emails generated.")
-    else:
-        st.warning("No data provided.")
+else:
+    st.info("Upload or paste data to choose email format and generate emails.")
