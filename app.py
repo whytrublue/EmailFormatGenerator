@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import tldextract
+import re
 
 # Email format templates
 email_formats = [
@@ -24,8 +25,9 @@ st.title("Bulk Email Format Generator")
 # Option selector
 option = st.radio("Choose input method:", ("Upload CSV", "Paste Data"))
 
-# Input source
+# Data holder
 data = []
+
 if option == "Upload CSV":
     uploaded_file = st.file_uploader("Upload CSV with 'Full Name' and 'Domain' columns", type=["csv"])
     if uploaded_file:
@@ -36,16 +38,20 @@ if option == "Upload CSV":
             data = df_input[['Full Name', 'Domain']].values.tolist()
 
 elif option == "Paste Data":
-    pasted_text = st.text_area("Paste full name and domain separated by comma on each line (e.g., John Smith, google.com)", height=200)
+    pasted_text = st.text_area("Paste names followed by a domain (e.g., John Smith \\n Jane Doe \\n www.google.com)", height=300)
     if pasted_text.strip():
-        for line in pasted_text.strip().split("\n"):
-            if "," in line:
-                parts = line.strip().split(",", 1)
-                name = parts[0].strip()
-                domain = parts[1].strip()
-                data.append([name, domain])
+        lines = [line.strip() for line in pasted_text.strip().split("\n") if line.strip()]
+        # Detect last line as domain if it looks like one
+        domain_candidate = lines[-1]
+        ext = tldextract.extract(domain_candidate)
+        if ext.domain and ext.suffix:
+            domain = f"{ext.domain}.{ext.suffix}"
+            names = lines[:-1]
+            data = [[name, domain] for name in names]
+        else:
+            st.error("Couldn't identify a valid domain in the last line.")
 
-# Process and display results
+# Process and display
 if data:
     all_emails = []
 
@@ -76,33 +82,9 @@ if data:
     if all_emails:
         df_result = pd.DataFrame(all_emails)
         st.success(f"Generated {len(df_result)} emails.")
-        
-        # Show the DataFrame table once
         st.dataframe(df_result)
 
-        # CSV Download Button
-        csv = df_result.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Download CSV", data=csv, file_name="emails.csv", mime="text/csv")
-
-        # Display emails in a code block for copying
-        email_list = df_result["Generated Email"].tolist()
-        email_text = "\n".join(email_list)
-        st.subheader("Copy to Clipboard (Paste into Excel or Sheets)")
-        st.code(email_text, language='text')  # Display the text in a code block for easy copying
-
+        csv = df_result.to_csv(index=False)
+        st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
     else:
         st.warning("No valid emails generated.")
-
-
-elif option == "Paste Data":
-    pasted_text = st.text_area("Paste full names (one per line) followed by the domain on the last line", height=300)
-    if pasted_text.strip():
-        lines = [line.strip() for line in pasted_text.strip().split("\n") if line.strip()]
-        if len(lines) >= 2:
-            domain = lines[-1]
-            names = lines[:-1]
-            for name in names:
-                data.append([name, domain])
-        else:
-            st.warning("Please enter at least one name followed by a domain.")
-
