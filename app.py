@@ -92,6 +92,8 @@ if data:
 if all_emails:
     df_result = pd.DataFrame(all_emails)
     st.success(f"Generated {len(df_result)} emails.")
+
+    # Show the DataFrame table once
     st.dataframe(df_result)
 
     # Show just the generated emails for copy-paste
@@ -100,7 +102,10 @@ if all_emails:
     st.markdown("### 📋 Copy All Generated Emails")
     st.text_area("Click and press Ctrl+C or Cmd+C to copy", email_text, height=200)
 
-    # Download button
-    csv = df_result.to_csv(index=False)
-    st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
+    # Ensure that download button is only displayed once
+    if not st.session_state.get("download_button_shown", False):
+        # Set a flag so the button is only displayed once
+        st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
+        st.session_state.download_button_shown = True
+
 
