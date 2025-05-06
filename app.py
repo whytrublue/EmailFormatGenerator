@@ -94,7 +94,7 @@ if data:
         email_text = "\n".join(df_result["Generated Email"].tolist())
         st.markdown(
             f"""
-            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; background-color: #f9f9f9;">
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; background-color: black; color: white;">
                 {email_text.replace('\n', '<br>')}
             </div>
             """,
