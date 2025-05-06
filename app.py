@@ -88,3 +88,19 @@ if data:
         st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
     else:
         st.warning("No valid emails generated.")
+
+if all_emails:
+    df_result = pd.DataFrame(all_emails)
+    st.success(f"Generated {len(df_result)} emails.")
+    st.dataframe(df_result)
+
+    # Show just the generated emails for copy-paste
+    email_list = df_result["Generated Email"].tolist()
+    email_text = "\n".join(email_list)
+    st.markdown("### 📋 Copy All Generated Emails")
+    st.text_area("Click and press Ctrl+C or Cmd+C to copy", email_text, height=200)
+
+    # Download button
+    csv = df_result.to_csv(index=False)
+    st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
+
