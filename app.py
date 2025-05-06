@@ -81,7 +81,7 @@ if data:
             except Exception:
                 continue
 
-        if all_emails:
+    if all_emails:
         df_result = pd.DataFrame(all_emails)
         st.success(f"Generated {len(df_result)} emails.")
         st.dataframe(df_result)
@@ -102,5 +102,3 @@ if data:
         )
     else:
         st.warning("No valid emails generated.")
-
-
