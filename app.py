@@ -89,13 +89,12 @@ if data:
         csv = df_result.to_csv(index=False)
         st.download_button("Download Results as CSV", csv, "emails.csv", "text/csv")
 
-        # Display just the email column in a scrollable, copy-friendly format
-        st.subheader("📋 Copy Generated Emails")
-        email_text = "\n".join(df_result["Generated Email"].tolist())  # Join emails with newline separator
+       st.subheader("📋 Copy Generated Emails")
+        email_text = "\n".join(df_result["Generated Email"].tolist())
         st.markdown(
             f"""
             <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; background-color: #f9f9f9;">
-                <pre>{email_text}</pre>
+                {email_text.replace('\n', '<br>')}
             </div>
             """,
             unsafe_allow_html=True
